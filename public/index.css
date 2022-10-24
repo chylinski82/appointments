@@ -69,17 +69,29 @@ select {
 .tile {
   margin: 0;
   font-size: 14px;
-  margin-bottom: 4px;
-  padding: 5px;
+  
+  padding: 4px 7px 7px;
 }
 
 .tile-title {
   font-weight: bold;
-  padding: 7px;
+  padding: 0 7px;
 }
 
 .tile-container {
   margin-bottom: 20px;
   background-color: aquamarine;
   border-radius: 7px;
+}
+
+.tile-top {
+  display: flex;
+  justify-content: space-between;
+  height: 32px;
+  padding-right: 7px;
+  align-items: center;
+}
+
+.delete {
+  border-radius: 5px;
 }

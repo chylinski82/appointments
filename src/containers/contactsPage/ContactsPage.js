@@ -2,26 +2,17 @@ import React, { useState, useEffect } from "react";
 import { ContactForm } from '../../components/contactForm/ContactForm';
 import { TileList } from '../../components/tileList/TileList';
 
-export const ContactsPage = ({ contacts, addContact }) => {
-  /*
-  Define state variables for 
-  contact info and duplicate check
-  */
+export const ContactsPage = ({ contacts, addContact, itemId, db }) => {
+ 
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
 
-  const [isDuplicate, setIsDuplicate] = useState(false);
-
-  //addContact({ name: 'iz', phone: 3123 , email: 'iz@dsddwe'});
+  const [isDuplicate, setIsDuplicate] = useState(false); // variable to prevent user from creating contact with the same name
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    /*
-    Add contact info and clear data
-    if the contact name is not a duplicate
-    */
-    if (!isDuplicate) {
+    if (!isDuplicate) { // contact is added to both app and firestore collection only if name isn't a duplicate
       addContact({ name: name, phone: phone, email: email});
       setName('');
       setPhone('');
@@ -29,14 +20,9 @@ export const ContactsPage = ({ contacts, addContact }) => {
     }   
   };
 
-  /*
-  Using hooks, check for contact name in the 
-  contacts array variable in props
-  */
   useEffect(() => {
     contacts.some(item => item.name === name) ? setIsDuplicate(true) : setIsDuplicate(false);
   }, [name]);
-  //console.log('test3', contacts);
 
   return (
     <div>
@@ -48,12 +34,13 @@ export const ContactsPage = ({ contacts, addContact }) => {
                      setPhone={setPhone}
                      email={email}
                      setEmail={setEmail}
-                     handleSubmit={handleSubmit} />
+                     handleSubmit={handleSubmit}
+                      />
       </section>
       <hr />
       <section>
         <h2>Contacts</h2>
-        <TileList arr={contacts} dataType="contacts"/>
+        <TileList arr={contacts} dataType="contacts" itemId={itemId} db={db}/>
       </section>
     </div>
   );

@@ -1,6 +1,6 @@
 import React from "react";
 
-export const ContactPicker = ({ contacts, onChange }) => {
+export const ContactPicker = ({ contacts, onChange }) => {  // iterates through contacts to choose onew for an appointment
   return (
     <select onChange={onChange}>
       <option key={-1} defaultValue={''}>Select contact</option>

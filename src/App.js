@@ -5,11 +5,7 @@ import { AppointmentsPage } from "./containers/appointmentsPage/AppointmentsPage
 import { ContactsPage } from "./containers/contactsPage/ContactsPage";
 
 import { initializeApp } from 'firebase/app'
-import {
-  getFirestore, collection, onSnapshot,
-  addDoc, deleteDoc, doc
-} from 'firebase/firestore'
-
+import { getFirestore, collection, onSnapshot, addDoc } from 'firebase/firestore'
 
 const firebaseConfig = {
   apiKey: "AIzaSyD9zYDMDaUHUhLi7iRreE0WjyPGocxFRY8",
@@ -28,35 +24,37 @@ function App() {
   // init services
   const db = getFirestore()
 
-  // collection ref
+  // collections ref
   const contactsRef = collection(db, 'contacts');
   const appointmentsRef = collection(db, 'appointments'); 
 
   const [contacts, setContacts] = useState([]);
   const [appointments, setAppointments] = useState([]);
-  const [loader, setLoader] = useState(true);
+  const [itemId, setItemId] = useState([]); // nested array of firestore document IDs coupled with unique name or data/time set.
+  
+  let items = []; // array of objects from firestore
 
-  let items = [];
-
-  const getData = (ref, arr, f) => {
+  const getData = (ref, arr, f) => {  // reusable function to add data to either contacts or appointments components
     onSnapshot(ref, (snapshot) => {
       snapshot.docs.forEach((doc) => {
-        //console.log('data',doc.data());
         if(ref === contactsRef) {
-          !items.some(item => item.name === doc.data().name) && items.push(doc.data());
-          //console.log('items', items, items.some(item => item.name === doc.data().name));
-        } else if(ref === appointmentsRef) {
-          !items.some(item => item.date === doc.data().date && item.time === doc.data().time) && items.push(doc.data());
-        }       
+          !items.some(item => item.name === doc.data().name) && items.push(doc.data())
+                                      && setItemId((prev) => [...prev, [doc.data().name, doc.id]]);
+        } else if (ref === appointmentsRef) {
+          !items.some(item => item.date === doc.data().date && item.time === doc.data().time)
+                                      && items.push(doc.data()) 
+                                      && setItemId((prev) => [...prev, [doc.data().date, doc.data().time, doc.id]]);
+                                    }       
       });
       let updatedArray = arr.concat(items);
+      
       f(updatedArray);
       items = [];
-      setLoader(false);
+      //setLoader(false);
     })
   }
 
-  const addData = (ref, item) => {
+  const addData = (ref, item) => {    // reusable function to add data from app to firestore
     addDoc(ref, item);
   }
 
@@ -73,21 +71,16 @@ function App() {
     APPOINTMENTS: "/appointments",
   };
 
-  /*
-  Implement functions to add data to
-  contacts and appointments
-  */
+  // functions to add data by user to contacts and appointments components and to firestore
   const addContact = contact => {
     (contact.name && contact.phone && contact.email) && setContacts((prev) => [...prev, contact]);
     addData(contactsRef, contact);
   };
 
   const addAppointment = appointment => {
-    console.log(appointments, appointment);
     setAppointments((prev) => [...prev, appointment]);
     addData(appointmentsRef, appointment);
   };
-
 
   return (
     <>
@@ -106,12 +99,15 @@ function App() {
           </Route>
           <Route path={ROUTES.CONTACTS}>
             <ContactsPage contacts={contacts}
-                          addContact={addContact} />
+                          addContact={addContact}
+                          itemId={itemId}db={db} />
           </Route>
           <Route path={ROUTES.APPOINTMENTS}>
             <AppointmentsPage appointments={appointments}
                               contacts={contacts}
-                              addAppointment={addAppointment} />
+                              addAppointment={addAppointment}
+                              itemId={itemId}
+                              db={db} />
           </Route>
         </Switch>
       </main>
